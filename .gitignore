@@ -6,3 +6,6 @@
 
 # Text files
 *.txt
+
+# git仓库创建图片
+git.jpg
