@@ -9,3 +9,6 @@
 
 # git仓库创建图片
 git.jpg
+
+# 忽略key配置
+key*.json

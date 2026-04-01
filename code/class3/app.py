@@ -4,7 +4,7 @@ import os
 from openai import OpenAI
 
 def load_config():
-    with open("code\class3\config.json", "r", encoding="utf-8") as f:
+    with open("code\class3\keyConfig.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
 config = load_config()
