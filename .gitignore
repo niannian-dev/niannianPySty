@@ -15,3 +15,15 @@ key*.json
 
 # 忽略log文件
 *.log
+
+# 忽略workspace目录
+workspace/
+
+# 忽略__pycache__目录
+__pycache__/
+
+# 忽略.zip , .tar.gz 文件 , .tar 文件 , .7z 文件
+*.zip
+*.tar.gz
+*.tar
+*.7z
