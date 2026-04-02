@@ -12,3 +12,6 @@ git.jpg
 
 # 忽略key配置
 key*.json
+
+# 忽略log文件
+*.log
