@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 from core.config import load_config, BASE_DIR
 from core.logger import setup_logger
@@ -14,9 +13,10 @@ def main() -> None:
     llm = LLMClient(config)
     logger.info("应用启动成功")
     logger.info("workspace_dir=%s", workspace_dir)
-    print("=== mini ChatGPT Code 工程化版本 ===")
+    print("=== mini ChatGPT Code 二段式工程版 ===")
     print("示例：")
     print("  读取 test.txt")
+    print("  总结 test.txt")
     print("  写入 note.txt 内容是 你好")
     print("  执行 python --version")
     print("输入 exit 退出")
@@ -33,7 +33,8 @@ def main() -> None:
             logger.info("模型返回任务: %s", json.dumps(task, ensure_ascii=False))
             print("\n[模型返回的任务 JSON]")
             print(json.dumps(task, ensure_ascii=False, indent=2))
-            result = handle_task(task, workspace_dir)
+            # result = handle_task(task, workspace_dir)
+            result = handle_task(task, workspace_dir, llm, config)
             logger.info("任务执行结果: %s", json.dumps(result, ensure_ascii=False))
             print("\n[执行结果]")
             print(json.dumps(result, ensure_ascii=False, indent=2))

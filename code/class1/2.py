@@ -19,3 +19,5 @@ fp.close()
 fp1 = open("test1.txt","w")   #w表示写入模式
 print(a,b,"hello",sep=' ',end='\n',file=fp1)
 fp1.close()
+
+
