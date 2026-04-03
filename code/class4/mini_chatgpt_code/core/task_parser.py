@@ -1,13 +1,16 @@
+from collections.abc import Callable
 from pathlib import Path
 from tools.file_tool import read_file, write_file
 from tools.shell_tool import run_command
 
 
-def ask_write_confirmation(path: str) -> bool:
-    # answer = input(f"即将写入文件 {path}，是否继续？(y/n): ").strip().lower()
-    return answer == "y"
-
-def handle_task(task: dict, workspace_dir: Path, llm, config: dict) -> dict:
+def handle_task(
+    task: dict,
+    workspace_dir: Path,
+    llm,
+    config: dict,
+    confirm_write: Callable[[str], bool] | None = None,
+) -> dict:
     action = task.get("action")
     if action == "error":
         return {"status": "error", "message": task.get("message", "未知错误")}
@@ -40,7 +43,9 @@ def handle_task(task: dict, workspace_dir: Path, llm, config: dict) -> dict:
         if not path:
             return {"status": "error", "message": "缺少 path"}
         if config.get("CONFIRM_BEFORE_WRITE", True):
-            if not ask_write_confirmation(path):
+            if confirm_write is None:
+                return {"status": "error", "message": "缺少写入确认处理器"}
+            if not confirm_write(path):
                 return {"status": "error", "message": "用户取消写入"}
         try:
             write_file(workspace_dir, path, content)

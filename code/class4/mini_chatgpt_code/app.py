@@ -1,9 +1,14 @@
 import json
 
 from core.config import load_config, BASE_DIR
+from core.controller import AppController
 from core.logger import setup_logger
 from core.llm import LLMClient
-from core.task_parser import handle_task
+
+
+def confirm_write_in_cli(path: str) -> bool:
+    answer = input(f"即将写入文件 {path}，是否继续？(y/n): ").strip().lower()
+    return answer == "y"
 
 def main() -> None:
     config = load_config()
@@ -11,6 +16,7 @@ def main() -> None:
     workspace_dir = BASE_DIR / config.get("WORKSPACE_DIR", "workspace")
     workspace_dir.mkdir(exist_ok=True)
     llm = LLMClient(config)
+    controller = AppController(llm=llm, workspace_dir=workspace_dir, config=config, logger=logger)
     logger.info("应用启动成功")
     logger.info("workspace_dir=%s", workspace_dir)
     print("=== mini ChatGPT Code 二段式工程版 ===")
@@ -29,15 +35,14 @@ def main() -> None:
             break
         logger.info("收到用户输入: %s", user_input)
         try:
-            task = llm.parse_task(user_input)
-            logger.info("模型返回任务: %s", json.dumps(task, ensure_ascii=False))
+            execution = controller.process_input(
+                user_input,
+                confirm_write=confirm_write_in_cli,
+            )
             print("\n[模型返回的任务 JSON]")
-            print(json.dumps(task, ensure_ascii=False, indent=2))
-            # result = handle_task(task, workspace_dir)
-            result = handle_task(task, workspace_dir, llm, config)
-            logger.info("任务执行结果: %s", json.dumps(result, ensure_ascii=False))
+            print(json.dumps(execution["task"], ensure_ascii=False, indent=2))
             print("\n[执行结果]")
-            print(json.dumps(result, ensure_ascii=False, indent=2))
+            print(execution["result_text"])
             print("-" * 50)
         except Exception as e:
             logger.exception("程序执行异常")
