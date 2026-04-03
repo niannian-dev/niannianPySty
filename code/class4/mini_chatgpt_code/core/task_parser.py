@@ -4,7 +4,7 @@ from tools.shell_tool import run_command
 
 
 def ask_write_confirmation(path: str) -> bool:
-    answer = input(f"即将写入文件 {path}，是否继续？(y/n): ").strip().lower()
+    # answer = input(f"即将写入文件 {path}，是否继续？(y/n): ").strip().lower()
     return answer == "y"
 
 def handle_task(task: dict, workspace_dir: Path, llm, config: dict) -> dict:
