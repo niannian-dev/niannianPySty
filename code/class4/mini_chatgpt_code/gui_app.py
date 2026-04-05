@@ -13,6 +13,8 @@ class MiniChatGPTGUI:
         self.root = root
         self.root.title("mini ChatGPT Code")
         self.root.geometry("1000x720")
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(2, weight=1)
 
         self.config = load_config()
         self.logger = setup_logger(self.config.get("APP_LOG_LEVEL", "INFO"))
@@ -34,10 +36,30 @@ class MiniChatGPTGUI:
         self.detail_option_var = tk.StringVar()
         self.capability_var = tk.StringVar()
 
+        self._build_root_layout()
         self._build_top_info()
         self._build_input_area()
         self._build_output_area()
         self._build_status_bar()
+
+    def _build_root_layout(self):
+        self.top_frame = ttk.Frame(self.root, padding=(10, 8))
+        self.top_frame.grid(row=0, column=0, sticky="ew")
+        self.top_frame.columnconfigure(0, weight=1)
+
+        self.input_frame = ttk.Frame(self.root, padding=(10, 4))
+        self.input_frame.grid(row=1, column=0, sticky="ew")
+        self.input_frame.columnconfigure(0, weight=1)
+
+        self.content_frame = ttk.Frame(self.root, padding=(10, 6))
+        self.content_frame.grid(row=2, column=0, sticky="nsew")
+        self.content_frame.columnconfigure(0, weight=1)
+        self.content_frame.columnconfigure(1, weight=1)
+        self.content_frame.rowconfigure(0, weight=1)
+
+        self.status_frame = ttk.Frame(self.root, padding=(10, 4))
+        self.status_frame.grid(row=3, column=0, sticky="ew")
+        self.status_frame.columnconfigure(1, weight=1)
 
     def _resolve_mode_label(self):
         request_mode = self.config.get("REQUEST_MODE", "chat_completions")
@@ -91,18 +113,15 @@ class MiniChatGPTGUI:
         return "\n".join(lines)
 
     def _build_top_info(self):
-        top_frame = ttk.Frame(self.root)
-        top_frame.pack(fill="x", padx=10, pady=5)
-
         title_label = ttk.Label(
-            top_frame,
+            self.top_frame,
             text="mini ChatGPT Code 控制台",
             font=("Helvetica", 18, "bold"),
         )
-        title_label.pack(anchor="w")
+        title_label.grid(row=0, column=0, sticky="w")
 
-        info_frame = ttk.Frame(self.root)
-        info_frame.pack(fill="x", padx=10, pady=(0, 5))
+        info_frame = ttk.Frame(self.top_frame)
+        info_frame.grid(row=1, column=0, sticky="ew", pady=(6, 0))
         info_frame.columnconfigure(1, weight=1)
 
         info_items = [
@@ -117,21 +136,20 @@ class MiniChatGPTGUI:
             value_label.grid(row=row, column=1, sticky="w")
 
     def _build_input_area(self):
-        input_frame = ttk.Frame(self.root)
-        input_frame.pack(fill="x", padx=10, pady=5)
-        input_frame.columnconfigure(1, weight=1)
+        self.input_frame.columnconfigure(0, weight=1)
 
-        capability_frame = ttk.Labelframe(input_frame, text="输入提示")
-        capability_frame.pack(fill="x", pady=(0, 8))
+        capability_frame = ttk.Labelframe(self.input_frame, text="输入提示")
+        capability_frame.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        capability_frame.columnconfigure(0, weight=1)
         capability_label = ttk.Label(
             capability_frame,
             textvariable=self.capability_var,
             justify="left",
         )
-        capability_label.pack(anchor="w", padx=8, pady=6)
+        capability_label.grid(row=0, column=0, sticky="w", padx=8, pady=6)
 
-        selector_frame = ttk.Frame(input_frame)
-        selector_frame.pack(fill="x", pady=(0, 8))
+        selector_frame = ttk.Frame(self.input_frame)
+        selector_frame.grid(row=1, column=0, sticky="ew", pady=(0, 8))
         selector_frame.columnconfigure(1, weight=1)
         selector_frame.columnconfigure(3, weight=1)
 
@@ -159,64 +177,67 @@ class MiniChatGPTGUI:
         self.detail_option_combo.grid(row=0, column=3, sticky="ew", pady=2)
         self.detail_option_combo.bind("<<ComboboxSelected>>", self._on_detail_option_change)
 
-        entry_label = ttk.Label(input_frame, text="请输入命令：")
-        entry_label.pack(anchor="w")
+        command_row_frame = ttk.Frame(self.input_frame)
+        command_row_frame.grid(row=2, column=0, sticky="ew")
+        command_row_frame.columnconfigure(0, weight=1)
 
-        self.input_entry = ttk.Entry(input_frame)
-        self.input_entry.pack(fill="x", pady=5)
+        entry_label = ttk.Label(command_row_frame, text="请输入命令：")
+        entry_label.grid(row=0, column=0, sticky="w", columnspan=2)
 
-        button_frame = ttk.Frame(input_frame)
-        button_frame.pack(fill="x")
+        self.input_entry = ttk.Entry(command_row_frame)
+        self.input_entry.grid(row=1, column=0, sticky="ew", pady=(5, 0))
+
+        button_frame = ttk.Frame(command_row_frame)
+        button_frame.grid(row=1, column=1, sticky="e", padx=(10, 0), pady=(5, 0))
 
         self.run_button = ttk.Button(button_frame, text="执行", command=self.run_task)
-        self.run_button.pack(side="left", padx=5)
+        self.run_button.grid(row=0, column=0, padx=(0, 5))
 
         clear_button = ttk.Button(button_frame, text="清空输出", command=self.clear_output)
-        clear_button.pack(side="left", padx=5)
+        clear_button.grid(row=0, column=1, padx=5)
 
         example_button = ttk.Button(button_frame, text="示例", command=self.fill_example)
-        example_button.pack(side="left", padx=5)
+        example_button.grid(row=0, column=2, padx=(5, 0))
 
         self.task_type_var.set(task_type_names[0])
         self._refresh_detail_options(task_type_names[0])
         self.capability_var.set(self._get_capability_text())
 
     def _build_output_area(self):
-        output_pane = ttk.Panedwindow(self.root, orient="horizontal")
-        output_pane.pack(fill="both", expand=True, padx=10, pady=5)
+        task_frame = ttk.Labelframe(self.content_frame, text="模型返回的任务")
+        task_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+        task_frame.columnconfigure(0, weight=1)
+        task_frame.rowconfigure(0, weight=1)
 
-        task_frame = ttk.Labelframe(output_pane, text="模型返回的任务")
-        result_frame = ttk.Labelframe(output_pane, text="执行结果")
-        output_pane.add(task_frame, weight=1)
-        output_pane.add(result_frame, weight=1)
+        result_frame = ttk.Labelframe(self.content_frame, text="执行结果")
+        result_frame.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
+        result_frame.columnconfigure(0, weight=1)
+        result_frame.rowconfigure(0, weight=1)
 
         self.task_output_text = tk.Text(task_frame, wrap="word")
         task_scroll = ttk.Scrollbar(task_frame, orient="vertical", command=self.task_output_text.yview)
         self.task_output_text.configure(yscrollcommand=task_scroll.set)
-        task_scroll.pack(side="right", fill="y")
-        self.task_output_text.pack(fill="both", expand=True, padx=(0, 5), pady=5)
+        self.task_output_text.grid(row=0, column=0, sticky="nsew", padx=(5, 0), pady=5)
+        task_scroll.grid(row=0, column=1, sticky="ns", padx=(0, 5), pady=5)
 
         self.result_output_text = tk.Text(result_frame, wrap="word")
         result_scroll = ttk.Scrollbar(result_frame, orient="vertical", command=self.result_output_text.yview)
         self.result_output_text.configure(yscrollcommand=result_scroll.set)
-        result_scroll.pack(side="right", fill="y")
-        self.result_output_text.pack(fill="both", expand=True, padx=(0, 5), pady=5)
+        self.result_output_text.grid(row=0, column=0, sticky="nsew", padx=(5, 0), pady=5)
+        result_scroll.grid(row=0, column=1, sticky="ns", padx=(0, 5), pady=5)
 
     def _build_status_bar(self):
-        status_frame = ttk.Frame(self.root)
-        status_frame.pack(fill="x", padx=10, pady=(0, 10))
+        status_label = ttk.Label(self.status_frame, text="状态：")
+        status_label.grid(row=0, column=0, sticky="w")
 
-        status_label = ttk.Label(status_frame, text="状态：")
-        status_label.pack(side="left")
-
-        current_status = ttk.Label(status_frame, textvariable=self.status_var)
-        current_status.pack(side="left")
+        current_status = ttk.Label(self.status_frame, textvariable=self.status_var)
+        current_status.grid(row=0, column=1, sticky="w", padx=(6, 0))
 
         hint_label = ttk.Label(
-            status_frame,
+            self.status_frame,
             text="(空闲 · 正在解析任务 · 正在执行命令 · 执行完成 · 执行失败)",
         )
-        hint_label.pack(side="left", padx=10)
+        hint_label.grid(row=0, column=2, sticky="e")
 
     def _set_status(self, status_text):
         self.status_var.set(status_text)
